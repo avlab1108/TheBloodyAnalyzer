@@ -12,7 +12,8 @@ sort -k1 --numeric tmpp.txt | awk '{
 print  $2," ",$3," ",$4," ",$5," 0 0 0" ;
 
 
- }' > position.txt
+}' > position.txt
 
 cd ..
 done
+

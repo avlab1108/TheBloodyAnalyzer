@@ -22,6 +22,5 @@ for name in fnames:
 	f2.write(name)
 	f2.write("\n");
 f2.close()
-os.system("analyzer.exe " + Parameters)
-			
+os.system("analyzer.exe " + Parameters)		
 
