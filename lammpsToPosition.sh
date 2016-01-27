@@ -9,7 +9,7 @@ AWKCOMMAND="awk -f $PWD/convlmppos.awk dump.2500000.txt"
 
 cd $1
 
-for i in {1..100..1}
+for i in {1..104..1}
 do
 dname="run-"$i
 
