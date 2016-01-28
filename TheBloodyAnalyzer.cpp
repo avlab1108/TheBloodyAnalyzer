@@ -733,7 +733,12 @@ int main(int argc, char *argv[])
 		int a,b,c,d;
 		for(int i = 0; i < N; i++)
 		{
-			fscanf(crdFile,"%lf %lf %lf %i %i %i %i",&crd[i].x[0],&crd[i].x[1],&crd[i].x[2],&a,&b,&c,&d);
+			if(fscanf(crdFile,"%lf %lf %lf %i %i %i %i",&crd[i].x[0],&crd[i].x[1],&crd[i].x[2],&a,&b,&c,&d) == EOF)
+			{
+				printf("Shit happened, wrong N or fucked up position files\n");
+				return 0;
+				
+			}	
 			printf("reading %lf %lf %lf\n",crd[i].x[0],crd[i].x[1],crd[i].x[2]);
 			if(i > 0)
 			{
