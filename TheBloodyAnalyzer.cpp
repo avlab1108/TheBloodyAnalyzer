@@ -619,9 +619,9 @@ void PrintNCont()
 	
 }
 
-void PrintContactMatrix()
+void PrintContactMatrixAxis()
 {
-	FILE* f = fopen("ContactMatrix.txt","w");
+	FILE* f = fopen("ContactMatrixAxis.txt","w");
 	fprintf(f,"** ");
 	for(int j = 0; j < N; j++)
 	{
@@ -644,6 +644,26 @@ fprintf(f,"\n");
 
 }
 
+
+void PrintContactMatrix()
+{
+	FILE* f = fopen("ContactMatrix.txt","w");
+
+	for(int i = 0; i < N; i++)
+	{
+		
+		for(int j =0 ; j < N; j++)
+		{
+			
+			fprintf(f,"%i ", ContactMatrix[i][j]);
+			
+			
+		}
+		fprintf(f,"\n");
+	}
+	fclose(f);
+
+}
 
 
 int main(int argc, char *argv[])
@@ -728,6 +748,7 @@ int main(int argc, char *argv[])
 	fclose(out);
 	fclose(filenames);
 	PrintContactMatrix();
+	PrintContactMatrixAxis();
 	PrintDistanceMatrix();
 	PrintNCont();
 	if(Nfiles == 1)
