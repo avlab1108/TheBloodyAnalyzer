@@ -24,4 +24,11 @@ plot 'S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt' using 1:4 with linespoints
 set output "lnRg2.png"
 set xlabel "ln(s)"
 set ylabel "ln(Rg2)"
-plot 'S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt' using 5:6 with linespoints, 0.66 * x, x
+set logscale xy
+plot 'S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt' using 1:3 with linespoints, x,  x**(0.66)
+
+set output "lnPCont.png"
+set xlabel "ln(s)"
+set ylabel "ln(PCont)"
+set logscale xy
+plot 'S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt' using 1:4 with linespoints, 1/x, x**(-0.66)
