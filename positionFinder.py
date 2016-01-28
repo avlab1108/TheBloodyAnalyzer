@@ -27,5 +27,7 @@ for name in fnames:
 f2.close()
 os.system("./analyzer.exe " + Parameters)
 os.system("cp *.txt " + path)
+os.system("gnuplot plot.gnu")
+os.system("cp *.png " + path)
 
 
