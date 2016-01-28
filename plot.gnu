@@ -25,3 +25,8 @@ set output "lnRg2.png"
 set xlabel "ln(s)"
 set ylabel "ln(Rg2)"
 plot 'S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt' using 5:6 with linespoints, 0.66 * x, x
+
+set output "lnPCont.png"
+set xlabel "ln(s)"
+set ylabel "ln(PCont)"
+plot 'S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt' using 5:7 with linespoints, -x, -3 * x / 2
