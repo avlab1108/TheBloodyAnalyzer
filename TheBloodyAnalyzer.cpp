@@ -580,6 +580,29 @@ void PrintDistanceMatrix()
 {
 	
 		FILE* f = fopen("DistanceMatrix.txt","w");
+	
+	for(int i = 0; i < N; i++)
+	{
+		
+		for(int j =0 ; j < N; j++)
+		{
+			
+			fprintf(f,"%lf ", DistanceMatrix[i][j]/DistanceMatrixNormer);
+			
+			
+		}
+		fprintf(f,"\n");
+	}
+	fclose(f);
+
+	
+	
+}
+
+void PrintDistanceMatrixAxis()
+{
+	
+		FILE* f = fopen("DistanceMatrixAxis.txt","w");
 	fprintf(f,"** ");
 	for(int j = 0; j < N; j++)
 	{
@@ -603,6 +626,7 @@ fprintf(f,"\n");
 	
 	
 }
+
 
 
 void PrintNCont()
@@ -750,6 +774,7 @@ int main(int argc, char *argv[])
 	PrintContactMatrix();
 	PrintContactMatrixAxis();
 	PrintDistanceMatrix();
+	PrintDistanceMatrixAxis();
 	PrintNCont();
 	if(Nfiles == 1)
 	{
