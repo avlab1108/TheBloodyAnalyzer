@@ -349,7 +349,7 @@ void CalculateStats()
             {
                 cnts++;
             }
-            meanrg +=GyrationRadius(j,i+j-1);
+            meanrg +=GyrationRadius(j,i+j);
             cnt++;
         }
         rs[i] += meanrs/(double)cnt;
@@ -648,6 +648,7 @@ fprintf(f,"\n");
 
 int main(int argc, char *argv[])
 {
+	Vector pbcmin,pbcmax;
 	if(argc < 4)
 	{
 		printf("chain length not specified, allow me to pop a jaunty little bonnet on your purview and ram up the shitter with lubricated horse cock!");
@@ -692,6 +693,19 @@ int main(int argc, char *argv[])
 			printf("reading %lf %lf %lf\n",crd[i].x[0],crd[i].x[1],crd[i].x[2]);
 			if(i > 0)
 			{
+			/*	for(mm = 0; mm <3 ; mm++)
+				{
+					double diff = crd[i].x[mm] - crd[i-1].x[mm] ;
+					if( fabs(crd[i].x[mm] - crd[i-1].x[mm]) > 5)
+					{
+						if()
+						
+						
+					}
+					
+				}
+				
+				*/
 				if( (crd[i]-crd[i-1]).len() > 5)
 				{
 					printf("Length of bond > 5, you're probably using PBC\n Fuckity bye.");
