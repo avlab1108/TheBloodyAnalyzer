@@ -690,7 +690,16 @@ int main(int argc, char *argv[])
 		{
 			fscanf(crdFile,"%lf %lf %lf %i %i %i %i",&crd[i].x[0],&crd[i].x[1],&crd[i].x[2],&a,&b,&c,&d);
 			printf("reading %lf %lf %lf\n",crd[i].x[0],crd[i].x[1],crd[i].x[2]);
-			
+			if(i > 0)
+			{
+				if( (crd[i]-crd[i-1]).len() > 5)
+				{
+					printf("Length of bond > 5, you're probably using PBC\n Fuckity bye.");
+					return 0;
+					
+				}
+				
+			}
 			
 		}
 		printf("calculating bloody stats\n");
