@@ -5,7 +5,7 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-AWKCOMMAND="awk -f $PWD/convlmppos.awk dump.2500000.txt"
+AWKCOMMAND="awk -f $PWD/convlmppos.awk unwrappedDump-2500000.txt"
 
 cd $1
 
