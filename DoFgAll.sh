@@ -34,6 +34,6 @@ done
 cd $HOME
 
 ./analyzer.exe $2 1.2 0.2
-cp *.txt $path
 gnuplot plot.gnu
-cp *.png $path
+mv *.txt $path
+mv *.png $path
