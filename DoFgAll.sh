@@ -6,26 +6,34 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 HOME=$(pwd)
-
+path=$1
 AWKCOMMAND="awk -f $HOME/convlmppos.awk unwrappedDump-2500000.txt"
 
-cd $1
+cd $path
+LIMIT=100
+rm -f "$HOME/filenames.txt"
+echo "$LIMIT" >> "$HOME/filenames.txt"
 
-for i in {1..1..1}
+for (( i=1; i<=$LIMIT; i++ ))
 do
-dname="run-"$i
+    dname="run-$i"
 
-cd $dname
-echo $(pwd)
-$AWKCOMMAND > tmpp.txt
-sort -k1 --numeric tmpp.txt | awk '{
-print  $2," ",$3," ",$4," ",$5," 0 0 0" ;
+    cd $dname
+    echo $(pwd)
+    $AWKCOMMAND > tmpp.txt
+    sort -k1 --numeric tmpp.txt | awk '{
+    print  $2," ",$3," ",$4," ",$5," 0 0 0" ;
 
-}' > position.txt
+    }' > position.txt
 
-cd ..
+    echo "$path/$dname/position.txt" >> "$HOME/filenames.txt"
+
+    cd ..
 done
 
 cd $HOME
 
-python positionFinder.py $2 $1 1.2 1
+./analyzer.exe $2 1.2 0.2
+cp *.txt $path
+gnuplot plot.gnu
+cp *.png $path
