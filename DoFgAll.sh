@@ -5,8 +5,9 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-PWD=$(pwd)
-AWKCOMMAND="awk -f $PWD/convlmppos.awk unwrappedDump-2500000.txt"
+HOME=$(pwd)
+
+AWKCOMMAND="awk -f $HOME/convlmppos.awk unwrappedDump-2500000.txt"
 
 cd $1
 
@@ -25,6 +26,6 @@ print  $2," ",$3," ",$4," ",$5," 0 0 0" ;
 cd ..
 done
 
-cd $PWD
+cd $HOME
 
-# python positionFinder.py $2 $1 1.2 1
+python positionFinder.py $2 $1 1.2 1
