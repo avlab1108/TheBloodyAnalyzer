@@ -8,7 +8,7 @@
 //for now only for 1 chain(!)
 //CUDA
 #endif
-
+bool debug = true;
 int ContactMatrix[5000][5000];
 double DistanceMatrix[5000][5000];
 
@@ -339,7 +339,7 @@ void CalculateStats()
         double meanrs = 0;
         double meanrg = 0;
         int cnt = 0;
-        int lag = rgstep;
+        int lag = 1;
         int cnts = 0;
         for(int j = rgstart; j < rglen - i; j+=lag)
         {
@@ -423,7 +423,9 @@ for(int i = 0; i < N; i++)
 			
 		if( (crd[i] - crd[j]).len() < CONTACT_CUT && abs(i-j)>1)
 		{
+			
 			ContactMatrix[i][j]++;
+		//	if(debug) printf("FUUCCCCKK\n");
 			
 		}
 		for(int k = 0; k < NContBins; k++)
@@ -706,7 +708,7 @@ int main(int argc, char *argv[])
 	FILE *filenames = fopen("filenames.txt","r");
 	int Nfiles;
 	fscanf(filenames,"%i",&Nfiles);
-	InitStats(N-1,1,0,N/2,0);
+	InitStats(N,1,0,N,0);
 	for(int ff = 0; ff < N; ff++)
 	{
 		for(int gg = 0; gg < N; gg++)
