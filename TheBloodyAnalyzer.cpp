@@ -20,6 +20,7 @@ void outputStats(FILE *f);
 double rgs[5000]; //starts with 2
 double rs[5000];
 double conts[5000];
+double rgwithout2s[5000];
 
 const int NContBins = 100;
 double NContRadius[NContBins];
@@ -323,7 +324,8 @@ for(int i = 0; i < rglen; i ++)
     rgs[i] = 0;
     rs[i] = 0;
     conts[i] = 0;
-}
+	rgwithout2s[i] = 0;
+	}
 
 
 
@@ -339,6 +341,7 @@ void CalculateStats()
         double meanrs = 0;
         double meanrg = 0;
         int cnt = 0;
+		double meanrg2w = 0;
         int lag = 1;
         int cnts = 0;
         for(int j = rgstart; j < rglen - i; j+=lag)
@@ -350,12 +353,13 @@ void CalculateStats()
                 cnts++;
             }
             meanrg +=GyrationRadius(j,i+j);
-            cnt++;
+            meanrg2w +=sqrt(GyrationRadius(j,i+j));
+			cnt++;
         }
         rs[i] += meanrs/(double)cnt;
         rgs[i] += meanrg/(double)cnt;
         conts[i] += cnts/(double)cnt;
-
+		rgwithout2s[i] += meanrg2w/(double)cnt;
 
 
     }
@@ -370,7 +374,7 @@ void outputStats(FILE *ft)
     {
         if(rs[i]!=0)
         {
-            fprintf(ft,"%i %f %f %f %f %f %f\n", i,rs[i]/rgcounter,rgs[i]/rgcounter,conts[i]/rgcounter,log((double)i),log(rgs[i]/rgcounter),log((double)conts[i]/rgcounter));
+            fprintf(ft,"%i %f %f %f %f %f %f %f\n ", i,rs[i]/rgcounter,rgs[i]/rgcounter,conts[i]/rgcounter,log((double)i),log(rgs[i]/rgcounter),log((double)conts[i]/rgcounter),rgwithout2s[i]/rgcounter);
 
 
         }
@@ -724,7 +728,7 @@ int main(int argc, char *argv[])
 			NContRadius[gg] = 0;
 		}
 	
-	FILE *out = fopen("S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont.txt","w");
+	FILE *out = fopen("S_Rend2_Rg2_Pcont_lnS_lnRg2_lnPcont_Rg.txt","w");
 	
 	for(int k = 0; k < Nfiles; k++)
 	{
