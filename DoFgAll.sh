@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ $# -eq 0 ]] ; then
-    echo 'Argument with folder required'
+if [[ $# != 2 ]] ; then
+    echo 'Argument should be: path, number of particles'
     exit 1
 fi
 
