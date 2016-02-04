@@ -9,8 +9,8 @@
 //CUDA
 #endif
 bool debug = true;
-int ContactMatrix[5000][5000];
-double DistanceMatrix[5000][5000];
+int** ContactMatrix;
+double** DistanceMatrix;
 
 double **TensorOfInertia;
 double ** TensorDiag;
@@ -25,10 +25,10 @@ double CONTACT_CUT = 2.5;
 void InitStats(int Len, int StpLen, int minlen, int maxlen,int);
 void CalculateStats();
 void outputStats(FILE *f);
-double rgs[5000]; //starts with 2
-double rs[5000];
-double conts[5000];
-double rgwithout2s[5000];
+double* rgs; //starts with 2
+double* rs;
+double* conts;
+double* rgwithout2s;
 
 const int NContBins = 100;
 double NContRadius[NContBins];
@@ -454,7 +454,7 @@ return tmp;
 }
 
 
-Vector crd[2000];
+Vector* crd;
 
 double GyrationRadius(int Start, int End)
 {
@@ -942,6 +942,7 @@ int main(int argc, char *argv[])
 	    TensorDiag[ss] = new double[4];
 	}
 	
+	
 	FILE* fshape = fopen("shapes.txt","w");
 	
 	
@@ -955,6 +956,21 @@ int main(int argc, char *argv[])
 		
 	}
 	N = atoi(argv[1]);
+	ContactMatrix = new int*[N];
+	DistanceMatrix = new double*[N];
+	crd = new Vector[N];
+
+	rgs = new double[N];
+	rs = new double[N];
+	conts = new double[N];
+	rgwithout2s = new double[N];
+	
+	for(int i = 0; i < N; i++)
+	{
+		ContactMatrix[i] = new int[N];
+		DistanceMatrix[i] = new double[N];
+	}
+	
 	CONTACT_CUT = atof(argv[2]);
 	NContStep = atof(argv[3]);
 	printf("%i N\n",N);
