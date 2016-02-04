@@ -19,7 +19,7 @@ BEGIN{strt=0;}
 }
 
 {
-    if(index($0, "ITEM: ATOMS id type mass x y z") != 0)
+    if(index($0, "ITEM: ATOMS") != 0)
     {
         strt = 1 ;
         
