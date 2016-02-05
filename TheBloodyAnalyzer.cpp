@@ -9,18 +9,26 @@
 //CUDA
 #endif
 bool debug = true;
-int ContactMatrix[5000][5000];
-double DistanceMatrix[5000][5000];
+int** ContactMatrix;
+double** DistanceMatrix;
 
+double **TensorOfInertia;
+double ** TensorDiag;
+double *eigenvalues;
+double **eigenvectors;
+
+
+
+double TensorParameters[3];
 double DistanceMatrixNormer = 0;
 double CONTACT_CUT = 2.5;
 void InitStats(int Len, int StpLen, int minlen, int maxlen,int);
 void CalculateStats();
 void outputStats(FILE *f);
-double rgs[5000]; //starts with 2
-double rs[5000];
-double conts[5000];
-double rgwithout2s[5000];
+double* rgs; //starts with 2
+double* rs;
+double* conts;
+double* rgwithout2s;
 
 const int NContBins = 100;
 double NContRadius[NContBins];
@@ -33,11 +41,180 @@ int rgmin;
 int rgcounter;
 int rgstart = 0;
 int N;
-
+int Nrot;
 
 struct Chain;
 struct Mon;
 struct Vector;
+
+
+
+
+
+//SOMESHIT
+
+
+
+#define ABS(x) (( (x)>0 )? (x) : -(x) )
+#define ROTATE(a,i,j,k,l) g=a[i][j];h=a[k][l];a[i][j]=g-s*(h+g*tau);a[k][l]=h+s*(g-h*tau);
+#define MACHINE_ZERO 1.0e-35
+
+/*	Gegeben a, berechnet Jacobi seine EW-e und die EV-en.
+	Am Ende: d enthaelt die Eigenwerte und
+				v die normierten Eigenvectoren als Spalten
+	Indexbereich: 1..n */
+
+/*Djacobi macht dasselbe wie Jacobi fuer double-Variable*/
+void jacobi_double(double  **a, int n, double  d[], double  **v, int *nrot) {
+
+	int j,iq,ip,i;
+	double  tresh,theta,tau,t,sm,s,h,g,c,*b=NULL,*z=NULL;
+
+//	void nrerror(char *);
+
+/*
+printf("jacobi = %lg %lg %lg \n",a[1][1],a[1][2],a[1][3]);
+printf("jacobi = %lg %lg %lg \n",a[2][1],a[2][2],a[2][3]);
+printf("jacobi = %lg %lg %lg \n",a[3][1],a[3][2],a[3][3]);
+exit(1);
+*/
+
+	b=(double *)calloc(sizeof(double), n+1);
+	z=(double *)calloc(sizeof(double), n+1);
+	for (ip=1;ip<=n;ip++) {
+		for (iq=1;iq<=n;iq++) v[ip][iq]=0.0;
+		v[ip][ip]=1.0;
+	}
+	for (ip=1; ip<=n; ip++) {
+		b[ip]=d[ip]=a[ip][ip];
+		z[ip]=0.0;
+	}
+	*nrot=0;
+	for (i=1; i<=50; i++) { /* try  50 sweeps at most */
+		sm=0.0;
+		for (ip=1; ip<=n-1; ip++) {
+			for (iq=ip+1;iq<=n;iq++)
+				sm += ABS(a[ip][iq]);
+		}
+		/*if(sm == 0.0) {  */
+		/*The comparation of sm with zero wouldn't work, if the underflow is not */
+		/*automatically set to zero. So we defined a number called MACHINE_ZERO: */
+		if (sm <= MACHINE_ZERO ) {
+			free(z);
+			free(b);
+			return;
+		}
+		if (i < 4)
+			tresh=0.2*sm/(n*n);
+		else
+			tresh=0.0;
+		for (ip=1;ip<=n-1;ip++) {
+			for (iq=ip+1;iq<=n;iq++) {
+				g=100.0*ABS(a[ip][iq]);
+				if (i > 4 && (double )(ABS(d[ip])+g) == (double )ABS(d[ip])
+					&& (double )(ABS(d[iq])+g) == (double )ABS(d[iq]))
+					a[ip][iq]=0.0;
+				else if (ABS(a[ip][iq]) > tresh) {
+					h=d[iq]-d[ip];
+					if ((double )(ABS(h)+g) == (double )ABS(h))
+						t=(a[ip][iq])/h;
+					else {
+						theta=0.5*h/(a[ip][iq]);
+						t=1.0/(ABS(theta)+sqrt(1.0+theta*theta));
+						if (theta < 0.0) t = -t;
+					}
+					c=1.0/sqrt(1+t*t);
+					s=t*c;
+					tau=s/(1.0+c);
+					h=t*a[ip][iq];
+					z[ip] -= h;
+					z[iq] += h;
+					d[ip] -= h;
+					d[iq] += h;
+					a[ip][iq]=0.0;
+					for (j=1;j<=ip-1;j++) {
+						ROTATE(a,j,ip,j,iq)
+					}
+					for (j=ip+1;j<=iq-1;j++) {
+						ROTATE(a,ip,j,j,iq)
+					}
+					for (j=iq+1;j<=n;j++) {
+						ROTATE(a,ip,j,iq,j)
+					}
+					for (j=1;j<=n;j++) {
+						ROTATE(v,j,ip,j,iq)
+					}
+					++(*nrot);
+				}
+			}
+		}
+		for (ip=1;ip<=n;ip++) {
+			b[ip] += z[ip];
+			d[ip]=b[ip];
+			z[ip]=0.0;
+		}
+	}
+	printf("Too many iterations in routine jacobi");
+}
+#undef ROTATE
+
+/* Sortiert die Eigenwerte im Array d[1..n] nach fallender Reihenfolge
+   und Ordnet die  Entsprechenden Eigenvektoren in der Matrix v um */
+void eigsort_in_decending_order(double d[], double **v, int n)
+{
+	int k,j,i;
+	double p;
+
+	for (i=1;i<n;i++) {
+		p=d[k=i];
+		for (j=i+1;j<=n;j++)
+			if (d[j] > p) p=d[k=j];
+		if (k != i) {
+			d[k]=d[i];
+			d[i]=p;
+			for (j=1;j<=n;j++) {
+				p=v[j][i];
+				v[j][i]=v[j][k];
+				v[j][k]=p;
+			}
+		}
+	}
+}
+
+
+
+//end SOMEOLDSHIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct rgb{
     double r;       // percent
@@ -277,7 +454,7 @@ return tmp;
 }
 
 
-Vector crd[2000];
+Vector* crd;
 
 double GyrationRadius(int Start, int End)
 {
@@ -308,6 +485,57 @@ double GyrationRadius(int Start, int End)
     return Rg/(double)(End-Start+1);
 
 }
+
+void GyrationTensor(int Start, int End)
+{
+    double Rg = 0;
+    Vector CMass,Vg;
+    for(int j = 0; j < 3; j++)
+    {
+        CMass.x[j] = 0;//υσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσισυισυισυισυισυισυισυισυυσιυσυυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσιυσυισυυσιυσιυσιυσι
+    }
+    for(int i = Start; i <= End; i ++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+        CMass.x[j] += crd[i].x[j];
+        }
+    }
+    for(int j = 0; j < 3; j++)
+    {
+        CMass.x[j] = CMass.x[j]/(double)(End-Start+1);
+    }
+
+	for(int k = 0 ; k < 3; k ++)
+		{
+			for(int l = 0; l < 3; l++)
+			{
+       TensorOfInertia[k+1][l+1] = 0;
+		for(int i = Start; i <= End; i++ )
+		{
+        
+			
+			
+		
+		TensorOfInertia[k+1][l+1] +=  -(crd[i].x[k] - CMass.x[k])*(crd[i].x[l] - CMass.x[l]);
+		//printf("%lf xy ij\n", crd[i].x[l] - CMass.x[l]);
+		if(k == l)
+		{
+			TensorOfInertia[k+1][l+1] += (crd[i]-CMass).sqlen();
+		//	printf("%lf sqlen\n",(crd[i]-CMass).sqlen());
+		}
+    }
+	//printf("%lf tensor component %i %i,\n",TensorOfInertia[k+1][l+1],k,l);
+	}
+		}
+    
+
+}
+
+
+
+
+
 
 
 void InitStats(int Len, int StpLen, int minlen, int maxlen,int StartMon = 0)
@@ -696,8 +924,30 @@ void PrintContactMatrix()
 }
 
 
+
+
+
 int main(int argc, char *argv[])
 {
+	
+	TensorOfInertia = new double*[4];
+	eigenvectors = new double*[4];
+	eigenvalues = new double[4];
+	TensorDiag = new double* [4];
+	
+	for(int ss = 0 ; ss < 4 ; ss++)
+	{
+		TensorOfInertia[ss] = new double[4];
+		eigenvectors[ss] = new double[4];
+	    TensorDiag[ss] = new double[4];
+	}
+	
+	
+	FILE* fshape = fopen("shapes.txt","w");
+	
+	
+	
+	
 	Vector pbcmin,pbcmax;
 	if(argc < 4)
 	{
@@ -706,6 +956,21 @@ int main(int argc, char *argv[])
 		
 	}
 	N = atoi(argv[1]);
+	ContactMatrix = new int*[N];
+	DistanceMatrix = new double*[N];
+	crd = new Vector[N];
+
+	rgs = new double[N];
+	rs = new double[N];
+	conts = new double[N];
+	rgwithout2s = new double[N];
+	
+	for(int i = 0; i < N; i++)
+	{
+		ContactMatrix[i] = new int[N];
+		DistanceMatrix[i] = new double[N];
+	}
+	
 	CONTACT_CUT = atof(argv[2]);
 	NContStep = atof(argv[3]);
 	printf("%i N\n",N);
@@ -745,7 +1010,7 @@ int main(int argc, char *argv[])
 				return 0;
 				
 			}	
-			printf("reading %lf %lf %lf\n",crd[i].x[0],crd[i].x[1],crd[i].x[2]);
+		//	printf("reading %lf %lf %lf\n",crd[i].x[0],crd[i].x[1],crd[i].x[2]);
 			if(i > 0)
 			{
 			/*	for(mm = 0; mm <3 ; mm++)
@@ -777,7 +1042,50 @@ int main(int argc, char *argv[])
 		UpdateContMatrix();
 		
 		
-		fclose(crdFile);
+	
+	//calculating tensor
+	GyrationTensor(0,N-1);
+	for(int k = 1 ; k < 4; k++)
+		{
+			
+			for(int l = 1; l < 4; l++)
+			{
+			
+		
+			printf("%lf ",TensorOfInertia[k][l]);
+		
+		
+			}
+		printf("\n");
+		}
+	 jacobi_double(TensorOfInertia, 3, eigenvalues, eigenvectors, &Nrot) ;
+		eigsort_in_decending_order(eigenvalues,eigenvectors,3);
+		printf("calculated tensor\n");
+		
+	
+	printf("%lf %lf %lf eigenvalues",eigenvalues[1],eigenvalues[2],eigenvalues[3]);
+	fprintf(fshape,"%s  ",fname);
+	if( fabs(eigenvalues[1] - eigenvalues[2]) <  eigenvalues[1]/5 && eigenvalues[1] > 5*eigenvalues[3] )
+	{
+		
+		fprintf(fshape,"cylindric\n");
+	}
+	
+	else if( fabs(eigenvalues[2] - eigenvalues[3]) <  eigenvalues[1]/5 )
+	{
+		
+		fprintf(fshape,"toroid\n");
+	}
+	else 
+	{
+		fprintf(fshape,"unknown\n");
+		
+	}
+
+
+
+
+	fclose(crdFile);
 	}
 	outputStats(out);
 	fclose(out);
@@ -787,6 +1095,9 @@ int main(int argc, char *argv[])
 	PrintDistanceMatrix();
 	PrintDistanceMatrixAxis();
 	PrintNCont();
+	
+	
+	
 	if(Nfiles == 1)
 	{
 		char fuckfuck[50];
