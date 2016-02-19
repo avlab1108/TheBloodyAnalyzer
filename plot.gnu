@@ -25,11 +25,12 @@ set output "lnRg.png"
 set xlabel "s"
 set ylabel "Rg"
 set logscale xy
-set xrange [1:128]
+set xrange [1:chainLength]
 plot filename using 1:8 with linespoints, x**(0.33)*0.5, x**(0.5)*0.5
 
 set output "lnPCont.png"
 set xlabel "s"
 set ylabel "PCont"
 set logscale xy
+set xrange [1:chainLength]
 plot filename using 1:4 with linespoints, 1/x, x**(-1.5)

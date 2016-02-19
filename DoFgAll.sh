@@ -6,28 +6,30 @@ if [[ $# != 2 ]] ; then
 fi
 
 HOME=$(pwd)
-path=$1
-AWKCOMMAND="awk -f $HOME/convlmppos.awk dump.2500000.txt"
+DATA_PATH=$1
+AWKCOMMAND="awk -f $HOME/convlmppos.awk dump.3000000.txt"
 
-cd $path
+cd $DATA_PATH
 LIMIT=100
 rm -f "$HOME/filenames.txt"
 COUNT=0
+POSITIONFILE="position_T_04_30.txt"
+TEMP=04
 
 for (( i=1; i<=$LIMIT; i++ ))
 do
-    dname="run-$i"
-    if [ -d $dname ]; then
+    DNAME="run-$i"
+    if [ -d $DNAME ]; then
         COUNT=`expr $COUNT + 1`
-        cd $dname
+        cd $DNAME
         echo $(pwd)
-        $AWKCOMMAND > tmpp.txt
-        sort -k1 --numeric tmpp.txt | awk '{
-        print  $2," ",$3," ",$4," ",$5," 0 0 0" ;
+#        $AWKCOMMAND > tmpp.txt
+#        sort -k1 --numeric tmpp.txt | awk '{
+#        print  $2," ",$3," ",$4," ",$5," 0 0 0" ;
+#
+#        }' > position.txt
 
-        }' > position.txt
-
-        echo "$path/$dname/position.txt" >> "$HOME/filenames.txt"
+       [ -f $DATA_PATH/$DNAME/$POSITIONFILE ] && echo "$DATA_PATH/$DNAME/$POSITIONFILE " >> "$HOME/filenames.txt"
         cd ..
     fi
 done
@@ -39,6 +41,12 @@ head "$HOME/filenames.txt"
 cd $HOME
 
 ./analyzer.exe $2 1.2 0.2
-gnuplot plot.gnu
-mv *.txt $path
-mv *.png $path
+
+echo "plot graph"
+echo $HOME
+
+gnuplot -e "chainLength=$2" plot.gnu
+
+mkdir -p $DATA_PATH/$TEMP
+mv *.txt $DATA_PATH/$TEMP
+mv *.png $DATA_PATH/$TEMP
