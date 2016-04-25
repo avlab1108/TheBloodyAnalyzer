@@ -660,6 +660,7 @@ for(int i = 0; i < N; i++)
 		//	if(debug) printf("FUUCCCCKK\n");
 			
 		}
+		/*
 		for(int k = 0; k < NContBins; k++)
 		{
 			if((crd[i] - crd[j]).len() < k*NContStep && abs(i-j)>1)
@@ -669,6 +670,7 @@ for(int i = 0; i < N; i++)
 			}
 			
 		}
+		*/
 
 	}
 
@@ -1094,7 +1096,7 @@ int main(int argc, char *argv[])
 	PrintContactMatrixAxis();
 	PrintDistanceMatrix();
 	PrintDistanceMatrixAxis();
-	PrintNCont();
+//	PrintNCont();
 	
 	
 	
