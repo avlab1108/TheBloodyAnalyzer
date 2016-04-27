@@ -11,13 +11,13 @@
 bool debug = true;
 int** ContactMatrix;
 double** DistanceMatrix;
-
+int TypeToLook = -1;
 double **TensorOfInertia;
 double ** TensorDiag;
 double *eigenvalues;
 double **eigenvectors;
 
-
+int* Types;
 
 double TensorParameters[3];
 double DistanceMatrixNormer = 0;
@@ -575,14 +575,19 @@ void CalculateStats()
         for(int j = rgstart; j < rglen - i; j+=lag)
         {
           //  printf("alive at step %i %i\n",i,j);
-			meanrs += (crd[j]-crd[j+i]).len();
-            if((crd[j]-crd[j+i]).len() < CONTACT_CUT)
+            if( (Types[j] == Types[j+i] && Types[j] == TypeToLook) || TypeToLook == -1)
+			{
+			
+			if((crd[j]-crd[j+i]).len() < CONTACT_CUT)
             {
                 cnts++;
             }
+			
+			meanrs += (crd[j]-crd[j+i]).len();
             meanrg +=GyrationRadius(j,i+j);
             meanrg2w +=sqrt(GyrationRadius(j,i+j));
 			cnt++;
+			}
         }
         rs[i] += meanrs/(double)cnt;
         rgs[i] += meanrg/(double)cnt;
@@ -966,7 +971,7 @@ int main(int argc, char *argv[])
 	rs = new double[N];
 	conts = new double[N];
 	rgwithout2s = new double[N];
-	
+	Types = new int[N];
 	for(int i = 0; i < N; i++)
 	{
 		ContactMatrix[i] = new int[N];
@@ -975,6 +980,12 @@ int main(int argc, char *argv[])
 	
 	CONTACT_CUT = atof(argv[2]);
 	NContStep = atof(argv[3]);
+	if(argc > 4)
+	{
+		TypeToLook = atoi(argv[4]);
+		printf("considering only %i type beads\n",TypeToLook);
+		
+	}
 	printf("%i N\n",N);
 	FILE *filenames = fopen("filenames.txt","r");
 	int Nfiles;
@@ -1006,7 +1017,7 @@ int main(int argc, char *argv[])
 		int a,b,c,d;
 		for(int i = 0; i < N; i++)
 		{
-			if(fscanf(crdFile,"%lf %lf %lf %i %i %i %i",&crd[i].x[0],&crd[i].x[1],&crd[i].x[2],&a,&b,&c,&d) == EOF)
+			if(fscanf(crdFile,"%lf %lf %lf %i %i %i %i",&crd[i].x[0],&crd[i].x[1],&crd[i].x[2],&Types[i],&b,&c,&d) == EOF)
 			{
 				printf("Shit happened, wrong N or fucked up position files\n");
 				return 0;
@@ -1030,7 +1041,7 @@ int main(int argc, char *argv[])
 				*/
 				if( (crd[i]-crd[i-1]).len() > 5)
 				{
-					printf("Length of bond > 5, you're probably using PBC\n Fuckity bye.");
+					printf("Length of bond > 5, you're probably using PBC on bead %i\n Fuckity bye.",i);
 					return 0;
 					
 				}
